@@ -1,0 +1,9 @@
+[build]
+  command = "bash build.sh"
+  publish = "dist"
+
+# Synthetic-patient mock-up: keep it out of search engines.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
