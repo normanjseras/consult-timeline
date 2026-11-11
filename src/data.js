@@ -54,9 +54,6 @@ for(const seg of LOC){const step=seg.kind==='floor'?4:1;for(let t=seg.s;t<(seg.e
 /* ---- labs ---- */
 const daily=arr=>arr.map((v,i)=>[i?T(i+1,4):T(1,2,25),v]);
 const plus=(a,x)=>[...a,...x].sort((p,q)=>p[0]-q[0]);
-const meldna=(cr,bi,inr,na)=>{cr=Math.min(Math.max(cr,1),4);bi=Math.max(bi,1);inr=Math.max(inr,1);
-  let m=Math.round(10*(0.957*Math.log(cr)+0.378*Math.log(bi)+1.12*Math.log(inr)+0.643));
-  if(m>11){na=Math.min(Math.max(na,125),137);m=Math.round(m+1.32*(137-na)-0.033*m*(137-na))}return Math.min(m,40)};
 const A={
   AST:[96,128,88,72,104,248,172,126,138,162,188,204],
   ALT:[44,62,54,46,52,112,96,88,104,148,196,214],
@@ -90,7 +87,7 @@ const S={
   ALT:{label:'ALT',unit:'U/L',lo:10,hi:40,dec:0,dots:1,pts:daily(A.ALT)},
   ALP:{label:'ALP',unit:'U/L',lo:40,hi:130,dec:0,dots:1,pts:daily(A.ALP)},
   Tbili:{label:'T bili',unit:'mg/dL',lo:0.2,hi:1.2,dec:1,dots:1,pts:daily(A.Tbili)},
-  MELD:{label:'MELD-Na',unit:'derived',dec:0,dots:1,pts:daily(A.Cr.map((c,i)=>meldna(c,A.Tbili[i],A.INR[i],A.Na[i])))},
+  MELD:{label:'MELD 3.0',unit:'derived',dec:0,dots:1,pts:[]}, // filled once A.Alb and meld3() are defined below
 };
 for(const k in S)S[k].key=k;
 const LABGROUPS={
@@ -378,8 +375,8 @@ const DAILY=[
 A.Alb=[2.6,2.4,2.5,2.5,2.1,2.4,2.6,2.5,2.4,2.4,2.3,2.4];
 S.Alb={key:'Alb',label:'Albumin',unit:'g/dL',lo:3.5,hi:5.0,dec:1,dots:1,pts:daily(A.Alb)};
 const meld3=(bi,inr,cr,na,alb,female)=>{bi=Math.max(bi,1);inr=Math.max(inr,1);cr=Math.min(Math.max(cr,1),3);na=Math.min(Math.max(na,125),137);alb=Math.min(Math.max(alb,1.5),3.5);
-  return Math.round((female?1.33:0)+4.56*Math.log(bi)+0.82*(137-na)-0.24*(137-na)*Math.log(bi)+9.09*Math.log(inr)+11.14*Math.log(cr)+1.85*(3.5-alb)-1.83*(3.5-alb)*Math.log(cr)+6)};
-S.MELD.label='MELD 3.0';
+  const s=Math.round((female?1.33:0)+4.56*Math.log(bi)+0.82*(137-na)-0.24*(137-na)*Math.log(bi)+9.09*Math.log(inr)+11.14*Math.log(cr)+1.85*(3.5-alb)-1.83*(3.5-alb)*Math.log(cr)+6);
+  return Math.min(40,Math.max(6,s))}; // OPTN reported range is 6–40
 S.MELD.pts=daily(A.Cr.map((c,i)=>meld3(A.Tbili[i],A.INR[i],c,A.Na[i],A.Alb[i],false)));
 S.MELD.note=t=>{const i=S.MELD.pts.findIndex(p=>p[0]===t);return i<0?'':'From bilirubin '+A.Tbili[i].toFixed(1)+', INR '+A.INR[i].toFixed(1)+', creatinine '+A.Cr[i].toFixed(1)+', sodium '+A.Na[i]+', albumin '+A.Alb[i].toFixed(1)+', male'};
 LABGROUPS.liver.keys=['AST','ALT','ALP','Tbili','Alb'];
